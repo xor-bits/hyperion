@@ -2,6 +2,7 @@
 //
 #![no_std]
 #![no_main]
+#![deny(unsafe_op_in_unsafe_fn)]
 //
 #![feature(
     const_option,
@@ -18,61 +19,89 @@
 
 //
 
+use hyperion_arch as arch;
+use hyperion_boot as boot;
 use hyperion_boot_interface::Cpu;
+use hyperion_drivers as drivers;
 use hyperion_kernel_info::{NAME, VERSION};
+#[cfg(target_arch = "x86_64")]
+use hyperion_kshell as kshell;
 use hyperion_log::debug;
+use hyperion_log_multi as log_multi;
+use hyperion_random as random;
+#[cfg(target_arch = "x86_64")]
+use hyperion_scheduler as scheduler;
 
 extern crate alloc;
 
 //
 
 pub mod panic;
+#[cfg(target_arch = "x86_64")]
 pub mod syscall;
 #[cfg(test)]
 pub mod testfw;
 
 //
 
+/// the actual entrypoint
+#[no_mangle]
+extern "C" fn _hyperion_start() -> ! {
+    let syscon = 0x100000 as *mut u32;
+    unsafe { core::ptr::write_volatile(syscon, 0x5555) };
+
+    arch::int::disable();
+    boot::init();
+    kernel_main();
+}
+
 #[no_mangle]
 fn kernel_main() -> ! {
     // enable logging and and outputs based on the kernel args,
     // any logging before won't be shown
-    hyperion_log_multi::init_logger();
+    log_multi::init_logger();
 
     debug!("Entering kernel_main");
-    debug!("{NAME} {VERSION} was booted with {}", hyperion_boot::NAME);
+    debug!("{NAME} {VERSION} was booted with {}", boot::NAME);
 
-    //
-    hyperion_arch::syscall::set_handler(syscall::syscall);
-    hyperion_arch::early_boot_cpu();
+    #[cfg(target_arch = "x86_64")]
+    arch::syscall::set_handler(syscall::syscall);
+    #[cfg(target_arch = "x86_64")]
+    arch::early_boot_cpu();
+    #[cfg(target_arch = "x86_64")]
+    random::provide_entropy(&arch::rng_seed().to_ne_bytes());
 
-    hyperion_random::provide_entropy(&hyperion_arch::rng_seed().to_ne_bytes());
-
-    hyperion_drivers::lazy_install_early();
+    drivers::lazy_install_early();
 
     #[cfg(test)]
     test_main();
 
     // main task(s)
-    hyperion_scheduler::executor::spawn(hyperion_kshell::kshell());
+    #[cfg(target_arch = "x86_64")]
+    scheduler::executor::spawn(kshell::kshell());
 
     // jumps to [smp_main] right bellow + wakes up other threads to jump there
-    hyperion_boot::smp_init(smp_main);
+    boot::smp_init(smp_main);
 }
 
 fn smp_main(cpu: Cpu) -> ! {
     debug!("{cpu} entering smp_main");
 
-    hyperion_arch::early_per_cpu(&cpu);
+    #[cfg(target_arch = "x86_64")]
+    arch::early_per_cpu(&cpu);
 
     if cpu.is_boot() {
-        hyperion_drivers::lazy_install_late();
-        hyperion_log::debug!("boot cpu drivers installed");
+        drivers::lazy_install_late();
+        debug!("boot cpu drivers installed");
     }
 
-    hyperion_scheduler::spawn(move || {
-        hyperion_scheduler::executor::run_tasks();
+    #[cfg(target_arch = "x86_64")]
+    scheduler::spawn(move || {
+        scheduler::executor::run_tasks();
     });
-    hyperion_log::debug!("resetting {cpu} scheduler");
-    hyperion_scheduler::reset();
+    debug!("resetting {cpu} scheduler");
+    #[cfg(target_arch = "x86_64")]
+    scheduler::reset();
+
+    arch::done();
 }

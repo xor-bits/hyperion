@@ -6,8 +6,9 @@ edition.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["limine"]
-limine = []
+default = []
+limine = ["dep:hyperion-boot-limine"]
+opensbi = ["dep:hyperion-boot-opensbi"]
 bootboot = []
 multiboot1 = []
 multiboot2 = []
@@ -16,5 +17,12 @@ multiboot2 = []
 [dependencies]
 spin.workspace = true
 
-hyperion-boot-limine.path = "../boot-limine"
 hyperion-log.path = "../log"
+
+[dependencies.hyperion-boot-limine]
+path = "../boot-limine"
+optional = true
+
+[dependencies.hyperion-boot-opensbi]
+path = "../boot-opensbi"
+optional = true

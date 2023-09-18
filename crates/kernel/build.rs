@@ -12,7 +12,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     //println!("cargo:rerun-if-env-changed=CARGO_CFG_TARGET_ARCH");
 
     println!("cargo:rustc-link-arg=-no-pie");
-    //println!("cargo:rust-link-arg=-no-pie");
 
     let mut bootloader: Option<&'static str> = None;
     let mut set = |s| {
@@ -23,14 +22,27 @@ fn main() -> Result<(), Box<dyn Error>> {
             bootloader = Some(s);
         }
     };
-    #[cfg(feature = "limine")]
-    set("limine");
-    #[cfg(feature = "bootboot")]
-    set("bootboot");
-    #[cfg(feature = "multiboot1")]
-    set("multiboot1");
-    #[cfg(feature = "multiboot2")]
-    set("multiboot2");
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "limine")] {
+            println!("cargo:warning=limine");
+            set("limine");
+        } else if #[cfg(feature = "opensbi")] {
+            println!("cargo:warning=opensbi");
+            set("opensbi");
+        } else if #[cfg(feature = "bootboot")] {
+            println!("cargo:warning=bootboot");
+            set("bootboot");
+        } else if #[cfg(feature = "multiboot1")] {
+            println!("cargo:warning=multiboot1");
+            set("multiboot1");
+        } else if #[cfg(feature = "multiboot2")] {
+            println!("cargo:warning=multiboot2");
+            set("multiboot2");
+        } else {
+            println!("cargo:warning=No bootloader specified");
+        }
+    }
 
     if let Some(bootloader) = bootloader {
         let script = format!("crates/boot-{bootloader}/src/link.ld");

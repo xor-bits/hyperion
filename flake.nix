@@ -27,7 +27,7 @@
             openssl
             (rust-bin.nightly.latest.default.override {
               extensions = [ "rust-src" ];
-              targets = [ "x86_64-unknown-none" ];
+              targets = [ "x86_64-unknown-none" "riscv64gc-unknown-none-elf" ];
             })
             cargo-udeps
             cargo-nextest

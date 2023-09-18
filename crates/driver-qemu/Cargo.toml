@@ -8,4 +8,3 @@ edition.workspace = true
 [dependencies]
 spin.workspace = true
 uart_16550.workspace = true
-x86_64.workspace = true

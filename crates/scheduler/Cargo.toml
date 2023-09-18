@@ -10,12 +10,10 @@ spin.workspace = true
 futures-util.workspace = true
 time.workspace = true
 crossbeam-queue.workspace = true
-x86_64.workspace = true
 
 hyperion-arch.path = "../arch"
 hyperion-clock.path = "../clock"
 hyperion-color.path = "../color"
-# hyperion-driver-acpi.path = "../driver-acpi"
 hyperion-instant.path = "../instant"
 hyperion-int-safe-lazy.path = "../int-safe-lazy"
 hyperion-keyboard.path = "../keyboard"
@@ -23,3 +21,4 @@ hyperion-log.path = "../log"
 hyperion-mem.path = "../mem"
 hyperion-scheduler-task.path = "../scheduler-task"
 hyperion-timer.path = "../timer"
+# hyperion-driver-acpi.path = "../driver-acpi"

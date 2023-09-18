@@ -237,8 +237,13 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 name = "hyperion-arch"
 version = "0.1.0"
 dependencies = [
+ "hyperion-arch-riscv64",
  "hyperion-arch-x86_64",
 ]
+
+[[package]]
+name = "hyperion-arch-riscv64"
+version = "0.1.0"
 
 [[package]]
 name = "hyperion-arch-x86_64"
@@ -288,6 +293,7 @@ name = "hyperion-boot"
 version = "0.1.0"
 dependencies = [
  "hyperion-boot-limine",
+ "hyperion-boot-opensbi",
  "hyperion-log",
  "spin",
 ]
@@ -302,9 +308,18 @@ version = "0.1.0"
 dependencies = [
  "crossbeam",
  "hyperion-boot-interface",
- "hyperion-kernel-extern",
  "hyperion-log",
  "limine",
+ "spin",
+]
+
+[[package]]
+name = "hyperion-boot-opensbi"
+version = "0.1.0"
+dependencies = [
+ "crossbeam",
+ "hyperion-boot-interface",
+ "hyperion-log",
  "spin",
 ]
 
@@ -397,7 +412,6 @@ version = "0.1.0"
 dependencies = [
  "spin",
  "uart_16550",
- "x86_64",
 ]
 
 [[package]]
@@ -416,6 +430,7 @@ dependencies = [
 name = "hyperion-drivers"
 version = "0.1.0"
 dependencies = [
+ "cfg-if",
  "hyperion-clock",
  "hyperion-driver-acpi",
  "hyperion-driver-framebuffer",
@@ -472,9 +487,9 @@ dependencies = [
 name = "hyperion-kernel"
 version = "0.1.0"
 dependencies = [
+ "cfg-if",
  "futures-util",
  "hyperion-arch",
- "hyperion-backtrace",
  "hyperion-boot",
  "hyperion-boot-interface",
  "hyperion-color",
@@ -492,10 +507,6 @@ dependencies = [
  "time 0.3.22",
  "x86_64",
 ]
-
-[[package]]
-name = "hyperion-kernel-extern"
-version = "0.1.0"
 
 [[package]]
 name = "hyperion-kernel-info"
@@ -641,7 +652,6 @@ dependencies = [
  "hyperion-timer",
  "spin",
  "time 0.3.22",
- "x86_64",
 ]
 
 [[package]]

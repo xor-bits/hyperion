@@ -2,7 +2,10 @@
 
 //
 
+#[cfg(feature = "limine")]
 pub use hyperion_boot_limine::*;
+#[cfg(feature = "opensbi")]
+pub use hyperion_boot_opensbi::*;
 
 //
 

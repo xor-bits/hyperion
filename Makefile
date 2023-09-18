@@ -4,29 +4,35 @@
 # @file
 # @version 0.1
 
+# tables
+KVM_x86_64       := true
+KVM_riscv64      := false
+QEMU_x86_64      := qemu-system-x86_64
+QEMU_riscv64     := qemu-system-riscv64
+RUST_T_x86_64    := x86_64-unknown-none
+RUST_T_riscv64   := riscv64gc-unknown-none-elf
+RUST_F_debug     :=
+RUST_F_release   := --release
+
 # config
+# x86_64, riscv64
 ARCH             ?= x86_64
-#ARCH             ?= x86
+# debug, release
 PROFILE          ?= debug
-#PROFILE          ?= release
 GDB              ?= false
+# limine
 BOOTLOADER       ?= limine
-KVM              ?= true
+KVM              ?= ${KVM_${ARCH}}
 
 # binaries
 NASM             ?= nasm
 LD               ?= ld.lld
 OBJCOPY          ?= llvm-objcopy
 CARGO            ?= cargo
-#CARGO            ?= cargo-clif
+# CARGO            ?= cargo-clif
 XORRISO          ?= xorriso
 JQ               ?= jq
-QEMU_x86_64      ?= qemu-system-x86_64
-QEMU_x86         ?= qemu-system-i386
 QEMU             ?= ${QEMU_${ARCH}}
-
-# rust targets
-RUST_T_x86_64    := x86_64-unknown-none
 
 # common directories
 # target dir is usually ./target/ but I like to set the cargo target directory to a shared
@@ -47,12 +53,11 @@ HYPERION         := ${HYPER_DIR}/hyperion.iso
 HYPERION_TESTING := ${HYPER_DIR}/hyperion-testing.iso
 
 # rust/cargo
-RUST_F_debug     :=
-RUST_F_release   := --release
-CARGO_FLAGS      ?=
-CARGO_FLAGS      += ${RUST_F_${PROFILE}}
-CARGO_FLAGS      += --target=${RUST_T_${ARCH}}
-CARGO_FLAGS      += --package=hyperion-kernel
+CARGO_FLAGS      ?= ${RUST_F_${PROFILE}} \
+                    --target=${RUST_T_${ARCH}} \
+					--no-default-features \
+					--features=${BOOTLOADER} \
+                    --package=hyperion-kernel
 KERNEL           := ${CARGO_DIR}/hyperion-kernel
 KERNEL_TESTING   := ${KERNEL}-testing
 KERNEL_SRC       := $(filter-out %: ,$(file < ${CARGO_DIR}/hyperion.d)) src/testfw.rs
@@ -99,6 +104,9 @@ build: ${KERNEL}
 
 # bootable iso alias
 iso: ${HYPERION}
+
+tree:
+	${CARGO} tree ${CARGO_FLAGS}
 
 clippy:
 	${CARGO} clippy ${CLIPPY_FLAGS} ${CARGO_FLAGS} -- -D warnings
